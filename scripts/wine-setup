@@ -1,0 +1,56 @@
+#!/bin/sh
+
+set -eu
+
+if [ -z "${DISPLAY-}" ]; then
+	Xvfb :99 & xvfb_pid=$!
+	killXvfb() {
+		wine wineboot --kill
+		sleep 2 && kill "${xvfb_pid}"
+	}
+	trap killXvfb EXIT
+	export DISPLAY=:99
+fi
+
+if [ -z "${WINEPREFIX-}" ]; then
+	export WINEPREFIX=~/.wine
+fi
+
+log_info() { printf -- '[INFO] %s\n' "$@"; }
+log_warn() { >&2 printf -- '[WARN] %s\n' "$@"; }
+log_fail() { >&2 printf -- '[FAIL] %s\n' "$@"; }
+
+run_reg() {
+	tmpfile=$(mktemp -t 'XXXX.reg')
+	printf -- '%s' "$1" > "${tmpfile}"
+	wine regedit "${tmpfile}"
+	rm -f "${tmpfile}"
+}
+
+########################################################
+# Setup fonts
+# (see: https://wiki.archlinux.org/index.php/Wine#Fonts)
+########################################################
+
+run_reg "$(cat <<-'EOF'
+	REGEDIT4
+
+	[HKEY_CURRENT_USER\Software\Wine\X11 Driver]
+	"ClientSideWithRender"="N"
+EOF
+)"
+
+run_reg "$(cat <<-'EOF'
+	REGEDIT4
+
+	[HKEY_CURRENT_USER\Control Panel\Desktop]
+	"FontSmoothing"="2"
+	"FontSmoothingOrientation"=dword:00000001
+	"FontSmoothingType"=dword:00000002
+	"FontSmoothingGamma"=dword:00000578
+EOF
+)"
+
+find /usr/share/fonts/ \
+	-type f \( -iname \*.ttf -o -iname \*.otf \) \
+	-exec ln -s '{}' "${WINEPREFIX}/drive_c/windows/Fonts" \;

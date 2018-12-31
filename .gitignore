@@ -1,0 +1,7 @@
+/dist/
+/pinball/*
+!/pinball/checksums.sh
+!/pinball/MD5SUMS
+!/pinball/README.md
+!/pinball/SHA1SUMS
+!/pinball/SHA256SUMS
