@@ -35,11 +35,11 @@ RUN mkdir /tmp/.X11-unix \
 ARG WINE_USER_UID=1000
 ARG WINE_USER_GID=1000
 RUN groupadd \
-		--gid "${WINE_USER_GID}" \
+		--gid "${WINE_USER_GID:?}" \
 		wine
 RUN useradd \
-		--uid "${WINE_USER_UID}" \
-		--gid "${WINE_USER_GID}" \
+		--uid "${WINE_USER_UID:?}" \
+		--gid "${WINE_USER_GID:?}" \
 		--groups audio,video \
 		--shell "$(command -v bash)" \
 		--home-dir /home/wine/ \
@@ -57,7 +57,7 @@ ENV WINEDLLOVERRIDES=mscoree,mshtml=
 ENV FREETYPE_PROPERTIES=truetype:interpreter-version=35
 
 # Setup wine
-RUN mkdir -p /tmp/setup/ "${WINEPREFIX}"
+RUN mkdir -p /tmp/setup/ "${WINEPREFIX:?}"
 COPY --chown=wine:wine pinball/ /opt/pinball/
 COPY --chown=wine:wine scripts/ /tmp/setup/scripts/
 RUN timeout 240 /tmp/setup/scripts/wine-setup

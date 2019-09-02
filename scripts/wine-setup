@@ -6,7 +6,7 @@ if [ -z "${DISPLAY-}" ]; then
 	Xvfb :99 & xvfb_pid=$!
 	killXvfb() {
 		wine wineboot --kill
-		sleep 2 && kill "${xvfb_pid}"
+		sleep 2 && kill "${xvfb_pid:?}"
 	}
 	trap killXvfb EXIT
 	export DISPLAY=:99
@@ -22,9 +22,9 @@ log_fail() { >&2 printf -- '[FAIL] %s\n' "$@"; }
 
 run_reg() {
 	tmpfile=$(mktemp -t 'XXXX.reg')
-	printf -- '%s' "$1" > "${tmpfile}"
-	wine regedit "${tmpfile}"
-	rm -f "${tmpfile}"
+	printf -- '%s' "${1:?}" > "${tmpfile:?}"
+	wine regedit "${tmpfile:?}"
+	rm -f "${tmpfile:?}"
 }
 
 ########################################################
@@ -53,4 +53,4 @@ EOF
 
 find /usr/share/fonts/ \
 	-type f \( -iname \*.ttf -o -iname \*.otf \) \
-	-exec ln -s '{}' "${WINEPREFIX}/drive_c/windows/Fonts" \;
+	-exec ln -s '{}' "${WINEPREFIX:?}/drive_c/windows/Fonts" \;
